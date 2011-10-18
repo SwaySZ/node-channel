@@ -1,0 +1,17 @@
+{
+  "name": "node-channel",
+    "version": "0.0.1",
+    "description": "A comet server, based on expressjs",
+    "repository": "git://github.com/calidion/node-channel.git",
+    "author": "calidion<calidion@gmail.com> (http://wordpress.3gcnbeta.com)",
+    "main": "index",
+    "contributors": [ 
+    { "name": "calidion", "email": "calidion@gmail.com" }
+  ],
+    "dependencies": {
+      "express": "X.X.X"
+    },
+    "keywords": ["server push", "comet", "web", "http", "restful", "channel", "streaming", "long polling", "polling"],
+    "repository": "git://github.com/calidion/node-channel",
+    "engines": { "node": ">= 0.4.1" }
+}
