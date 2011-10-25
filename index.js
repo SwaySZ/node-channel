@@ -14,6 +14,7 @@ var Channel = function() {};
 Channel.prototype.listen = function(server) {
 	this._server = server;
 	this._server.get('__channel/:channel_id', this.onRequest);
+	this._server.get('node-channel/:files', this.onStaticRequest);
 };
 
 
@@ -24,6 +25,9 @@ for(var i = 0; i < reses.length; i++) {
     reses.splice(i, 1);
   }
 };
+};
+
+Channel.prototype.onStaticRequest = function(req, res) {
 };
 
 Channel.prototype.onRequest = function(req, res) {
@@ -80,9 +84,9 @@ var createChannel = function() {
 
 };
 
-var destroyChannel = function() {};
+var destroyChannel = function(id) {};
 
-var notifyChannel = function() {};
+var notifyChannel = function(id, msg) {};
 
 exports = channel;
 
