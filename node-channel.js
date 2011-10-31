@@ -9,14 +9,13 @@ var express = require('express');
 var tokens = {};
 var __channel = null;
 var channel = {};
+var messages = {};
 
 var Channel = function() {};
 
 Channel.prototype.listen = function(server) {
 	this._server = server;
 	this._server.get('/__channel/:channel_id', this.onRequest);
-	//this._server.get('node-channel/:file', this.onStaticRequest);
-  console.log(__dirname);
 	this._server.use('/node-channel', express.static(__dirname + '/frontjs'));
 };
 
@@ -32,8 +31,12 @@ Channel.prototype.removeResponse = function(id, res) {
 Channel.prototype.onRequest = function(req, res) {
 	var id = req.params.channel_id;
 	console.log('incoming channel_id' + id);
-	if (__channel.checkID(id)) {
+	if (__channel.check(id)) {
 		tokens[id].push(res);
+    for(var i = 0; i < messages[id].length; i++) {
+      __channel.send(id, messages[id][i]);
+    };
+    __channel.send(id, "", true);
 		res.on('close', function() {
 			__channel.removeResponse(id, res);
 		});
@@ -42,10 +45,7 @@ Channel.prototype.onRequest = function(req, res) {
 	};
 };
 
-Channel.prototype.checkID = function(id) {
-  console.log('check id');
-  console.log(typeof tokens[id]);
-  console.log(tokens[id]);
+Channel.prototype.check = function(id) {
 	if (typeof tokens[id] === 'undefined') {
 		return false;
 	}
@@ -66,12 +66,20 @@ Channel.prototype.md5 = function(str) {
 Channel.prototype.create = function(id) {
 	if (typeof tokens[id] === 'undefined') {
 		tokens[id] = [];
+    messages[id] = [];
 	}
 };
 
-Channel.prototype.sendMessage = function(id, message, end) {
+Channel.prototype.send = function(id, message, end) {
   var end = end || false;
-	if (this.checkID(id)) {
+	if (this.check(id)) {
+    if (tokens[id].length === 0) {
+      if (typeof messages[id] === 'undefined') {
+        messages[id] = [];
+      }
+      messages[id].push(message);
+      return;
+    }
 		for (var i = 0; i < tokens[id].length; i++) {
 			var res = tokens[id][i];
 			res.write(message);
@@ -85,27 +93,16 @@ Channel.prototype.sendMessage = function(id, message, end) {
 
 
 var getChannel = function(server) {
-	console.log("inside get Channel");
 	if (!__channel) {
 		__channel = new Channel(server);
 	}
-	console.log("inside get Channel !");
 	return __channel;
 };
-
-var createChannel = function() {
-
-};
-
-var destroyChannel = function(id) {};
-
-var notifyChannel = function(id, msg) {};
 
 exports.listen = function(server) {
 	var c = getChannel(server);
 	c.listen(server);
 }
-
 
 exports.getToken = function(str) {
   if (__channel) {
@@ -114,9 +111,9 @@ exports.getToken = function(str) {
   return null;
 };
 
-exports.sendMessage = function(id, msg, end) {
+exports.send = function(id, msg, end) {
   if (__channel) {
-    __channel.sendMessage(id, msg, end);
+    __channel.send(id, msg, end);
   }
 }
 
